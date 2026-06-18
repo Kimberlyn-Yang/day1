@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
+import ScanPage from './ScanPage'
+import ResultPage from './ResultPage'
 
 const DANMAKU = [
   { text: '终于把需求评审过了 😊', emotion: 'happy' },
@@ -153,6 +155,14 @@ export default function App() {
         <video className="mona-video" src="/左到右.mp4" autoPlay loop muted playsInline />
         <div className="mona-title">她看见你了</div>
         <div className="mona-subtitle">走近一点，让她感受你今天的心情</div>
+      </div>
+
+      <div style={{ position: 'absolute', inset: 0, zIndex: 20 }}>
+        <ScanPage />
+      </div>
+
+      <div style={{ position: 'absolute', inset: 0, zIndex: 30 }}>
+        <ResultPage />
       </div>
     </div>
   )
