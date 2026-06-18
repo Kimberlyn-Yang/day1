@@ -1,5 +1,12 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+.page-shell {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
 body {
   background: #000;
   font-family: -apple-system, 'PingFang SC', 'Helvetica Neue', sans-serif;
@@ -200,4 +207,39 @@ body {
   font-size: 15px;
   color: rgba(255,255,255,0.55);
   letter-spacing: 0.02em;
+}
+
+.page-switcher {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 200;
+  display: flex;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 999px;
+  background: rgba(18, 18, 18, 0.45);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(14px);
+}
+
+.page-switcher-button {
+  border: 0;
+  background: transparent;
+  color: rgba(255,255,255,0.72);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.page-switcher-button:hover {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.92);
+}
+
+.page-switcher-button.is-active {
+  background: rgba(255,255,255,0.16);
+  color: #ffffff;
 }
