@@ -1,8 +1,4 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
   background: #000;
@@ -31,36 +27,105 @@ body {
 .dark-overlay {
   position: absolute;
   inset: 0;
-  z-index: 1;
-  background:
-    radial-gradient(ellipse 70% 60% at 50% 50%, rgba(255, 120, 60, 0.18) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(255, 80, 120, 0.10) 0%, transparent 65%),
-    radial-gradient(ellipse 100% 100% at 50% 50%, rgba(0, 0, 0, 0.6) 40%, rgba(0, 0, 0, 0.95) 100%);
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(255,120,60,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 100% 100% at 50% 50%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.92) 100%);
   animation: breathe 4s ease-in-out infinite;
+  z-index: 1;
 }
 
 @keyframes breathe {
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.7;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
 }
 
-.ripple-canvas {
+.spiral-canvas {
   position: absolute;
   inset: 0;
   z-index: 2;
   pointer-events: none;
 }
 
-.danmaku-layer {
+.star-canvas {
   position: absolute;
   inset: 0;
   z-index: 3;
+  pointer-events: none;
+}
+
+.weather-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 40px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%);
+  backdrop-filter: blur(2px);
+}
+
+.weather-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.weather-total {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.05em;
+}
+
+.weather-total strong {
+  color: rgba(255,255,255,0.9);
+  font-weight: 600;
+}
+
+.weather-main {
+  font-size: 16px;
+  color: rgba(255,255,255,0.85);
+  font-weight: 300;
+  letter-spacing: 0.08em;
+}
+
+.weather-tags {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.wtag {
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+}
+
+.wtag-happy {
+  background: rgba(255,220,80,0.18);
+  color: #ffd84a;
+  border: 0.5px solid rgba(255,220,80,0.3);
+}
+
+.wtag-tired {
+  background: rgba(100,160,255,0.18);
+  color: #6aaeff;
+  border: 0.5px solid rgba(100,160,255,0.3);
+}
+
+.wtag-anxious {
+  background: rgba(255,140,180,0.18);
+  color: #ff8cb4;
+  border: 0.5px solid rgba(255,140,180,0.3);
+}
+
+.danmaku-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
   pointer-events: none;
   overflow: hidden;
 }
@@ -77,39 +142,15 @@ body {
   backdrop-filter: blur(8px);
 }
 
-.danmaku-happy {
-  background: rgba(255, 220, 80, 0.88);
-  color: #5a3a00;
-}
-
-.danmaku-tired {
-  background: rgba(100, 160, 255, 0.88);
-  color: #0a1a4e;
-}
-
-.danmaku-anxious {
-  background: rgba(255, 140, 180, 0.88);
-  color: #6a0030;
-}
+.danmaku-happy { background: rgba(255,220,80,0.88); color: #5a3a00; }
+.danmaku-tired { background: rgba(100,160,255,0.88); color: #0a1a4e; }
+.danmaku-anxious { background: rgba(255,140,180,0.88); color: #6a0030; }
 
 @keyframes fly {
-  0% {
-    transform: translateX(0);
-    opacity: 0;
-  }
-
-  5% {
-    opacity: 1;
-  }
-
-  90% {
-    opacity: 1;
-  }
-
-  100% {
-    transform: translateX(-120vw);
-    opacity: 0;
-  }
+  0% { transform: translateX(0); opacity: 0; }
+  5% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(-120vw); opacity: 0; }
 }
 
 .bg-text {
@@ -119,9 +160,9 @@ body {
   transform: translate(-50%, -50%);
   font-size: 28vw;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.03);
+  color: rgba(255,255,255,0.03);
   letter-spacing: 0.1em;
-  z-index: 4;
+  z-index: 5;
   user-select: none;
   pointer-events: none;
 }
@@ -131,7 +172,7 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 5;
+  z-index: 6;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -144,20 +185,19 @@ body {
   object-fit: cover;
   border-radius: 50%;
   mix-blend-mode: lighten;
-  filter: drop-shadow(0 0 60px rgba(255, 120, 60, 0.5))
-    drop-shadow(0 0 120px rgba(255, 80, 120, 0.25));
+  filter: drop-shadow(0 0 60px rgba(255,120,60,0.5)) drop-shadow(0 0 120px rgba(255,80,120,0.25));
 }
 
 .mona-title {
   font-size: 32px;
   font-weight: 600;
   color: #ffffff;
-  text-shadow: 0 0 30px rgba(255, 120, 60, 0.6);
+  text-shadow: 0 0 30px rgba(255,120,60,0.6);
   letter-spacing: 0.05em;
 }
 
 .mona-subtitle {
   font-size: 15px;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255,255,255,0.55);
   letter-spacing: 0.02em;
 }
