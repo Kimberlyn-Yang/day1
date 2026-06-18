@@ -1,172 +1,158 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
 
-const isSkin = (r, g, b) => {
-  return (
-    r > 95 &&
-    g > 40 &&
-    b > 20 &&
-    r > g &&
-    r > b &&
-    Math.abs(r - g) > 15 &&
-    r - g > 15
-  )
-}
-
-const detectSkinPixels = (imageData, width, height) => {
-  const { data } = imageData
-  let sumX = 0
-  let count = 0
-  const step = 8
-
-  for (let y = 0; y < height; y += step) {
-    for (let x = 0; x < width; x += step) {
-      const i = (y * width + x) * 4
-      const r = data[i]
-      const g = data[i + 1]
-      const b = data[i + 2]
-
-      if (isSkin(r, g, b)) {
-        sumX += x
-        count += 1
-      }
-    }
-  }
-
-  if (count > 80) {
-    return { detected: true, x: sumX / count }
-  }
-
-  return { detected: false, x: 0 }
-}
+const DANMAKU = [
+  { text: '终于把需求评审过了 😊', emotion: 'happy' },
+  { text: '摸鱼摸到了好视频，很满足', emotion: 'happy' },
+  { text: '同事带了好吃的，开心', emotion: 'happy' },
+  { text: '下班提前一小时，爽', emotion: 'happy' },
+  { text: '早上咖啡特别香', emotion: 'happy' },
+  { text: '连续开了5个会，脑子不转了', emotion: 'tired' },
+  { text: '昨晚只睡了4小时', emotion: 'tired' },
+  { text: '项目快到deadline了，顶不住', emotion: 'tired' },
+  { text: '今天的bug怎么都找不到', emotion: 'tired' },
+  { text: '上班摸鱼都没力气', emotion: 'tired' },
+  { text: '老板突然说要看周报', emotion: 'anxious' },
+  { text: '感觉自己什么都没做完', emotion: 'anxious' },
+  { text: '下周要上线，代码还没写', emotion: 'anxious' },
+  { text: '不知道方向对不对，很慌', emotion: 'anxious' },
+  { text: '今天说错话了，一直在想', emotion: 'anxious' },
+]
 
 export default function App() {
-  const videoRef = useRef(null)
-  const streamRef = useRef(null)
-  const animRef = useRef(null)
-  const [currentLook, setCurrentLook] = useState('center')
-  const [faceDetected, setFaceDetected] = useState(false)
-
-  const detectFace = useCallback(() => {
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
-
-    if (!ctx) {
-      return
-    }
-
-    const analyze = () => {
-      const video = videoRef.current
-
-      if (!video || video.readyState < 2) {
-        animRef.current = requestAnimationFrame(analyze)
-        return
-      }
-
-      canvas.width = video.videoWidth
-      canvas.height = video.videoHeight
-      ctx.drawImage(video, 0, 0)
-
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-      const result = detectSkinPixels(imageData, canvas.width, canvas.height)
-
-      if (result.detected) {
-        setFaceDetected(true)
-        const centerX = result.x / canvas.width
-
-        if (centerX < 0.4) {
-          setCurrentLook('left')
-        } else if (centerX > 0.6) {
-          setCurrentLook('right')
-        } else {
-          setCurrentLook('center')
-        }
-      } else {
-        setFaceDetected(false)
-        setCurrentLook('center')
-      }
-
-      animRef.current = requestAnimationFrame(analyze)
-    }
-
-    animRef.current = requestAnimationFrame(analyze)
-  }, [])
-
-  const startCamera = useCallback(async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-      streamRef.current = stream
-
-      if (!videoRef.current) {
-        return
-      }
-
-      videoRef.current.srcObject = stream
-      await videoRef.current.play()
-      detectFace()
-    } catch (error) {
-      console.log('摄像头未授权', error)
-    }
-  }, [detectFace])
+  const cameraRef = useRef(null)
+  const canvasRef = useRef(null)
+  const [danmakuList, setDanmakuList] = useState([])
+  const counterRef = useRef(0)
 
   useEffect(() => {
     startCamera()
+    const interval = setInterval(addDanmaku, 2800)
+    initRipples()
+    return () => clearInterval(interval)
+  }, [])
 
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => track.stop())
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+      if (cameraRef.current) {
+        cameraRef.current.srcObject = stream
+        cameraRef.current.play()
       }
-
-      if (animRef.current) {
-        cancelAnimationFrame(animRef.current)
-      }
+    } catch (e) {
+      console.log('摄像头未授权')
     }
-  }, [startCamera])
+  }
 
-  const getVideoSrc = () => {
-    if (currentLook === 'left') return '/左到右.mp4'
-    if (currentLook === 'right') return '/右到左.mp4'
-    return '/左到右.mp4'
+  const addDanmaku = () => {
+    const item = DANMAKU[Math.floor(Math.random() * DANMAKU.length)]
+    const id = counterRef.current++
+    const top = 8 + Math.random() * 78
+    setDanmakuList((prev) => [...prev.slice(-12), { ...item, id, top }])
+    setTimeout(() => {
+      setDanmakuList((prev) => prev.filter((d) => d.id !== id))
+    }, 9000)
+  }
+
+  const initRipples = () => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    canvas.width = window.innerWidth
+    canvas.height = window.innerHeight
+
+    const particles = Array.from({ length: 90 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: 0.8 + Math.random() * 2.2,
+      speedY: 0.15 + Math.random() * 0.55,
+      driftX: (Math.random() - 0.5) * 0.3,
+      alpha: 0.2 + Math.random() * 0.6,
+      color:
+        Math.random() > 0.75
+          ? '255,190,120'
+          : Math.random() > 0.5
+            ? '255,145,90'
+            : '255,255,255',
+    }))
+
+    const resetParticle = (particle) => {
+      particle.x = Math.random() * canvas.width
+      particle.y = canvas.height + Math.random() * 40
+      particle.size = 0.8 + Math.random() * 2.2
+      particle.speedY = 0.15 + Math.random() * 0.55
+      particle.driftX = (Math.random() - 0.5) * 0.3
+      particle.alpha = 0.2 + Math.random() * 0.6
+      particle.color =
+        Math.random() > 0.75
+          ? '255,190,120'
+          : Math.random() > 0.5
+            ? '255,145,90'
+            : '255,255,255'
+    }
+
+    const resize = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+      particles.forEach((particle) => {
+        particle.x = Math.min(particle.x, canvas.width)
+        particle.y = Math.min(particle.y, canvas.height)
+      })
+    }
+
+    window.addEventListener('resize', resize)
+
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      for (let i = 0; i < particles.length; i += 1) {
+        const particle = particles[i]
+        particle.y -= particle.speedY
+        particle.x += particle.driftX
+
+        if (particle.y + particle.size < 0) {
+          resetParticle(particle)
+        }
+
+        ctx.beginPath()
+        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2)
+        ctx.fillStyle = `rgba(${particle.color},${particle.alpha})`
+        ctx.fill()
+      }
+
+      requestAnimationFrame(animate)
+    }
+
+    animate()
   }
 
   return (
     <div className="page">
-      <video ref={videoRef} style={{ display: 'none' }} muted playsInline />
+      <video ref={cameraRef} className="camera-bg" muted playsInline autoPlay />
 
-      <nav className="navbar">
-        <div className="navbar-logo">✳</div>
-        <div className="navbar-item">情绪感知</div>
-        <div className="navbar-item">互动体验</div>
-        <div className="navbar-item">今日天气</div>
-        <div className="navbar-item">关于 MONA</div>
-      </nav>
+      <div className="dark-overlay" />
 
-      <video
-        key={getVideoSrc()}
-        className="hero-image"
-        src={getVideoSrc()}
-        autoPlay
-        muted
-        playsInline
-      />
+      <canvas ref={canvasRef} className="ripple-canvas" />
 
-      <div className="hero-text">
-        <div className="brand-name">mona</div>
-        <div className="hero-title">她看见你了。</div>
+      <div className="danmaku-layer">
+        {danmakuList.map((d) => (
+          <div
+            key={d.id}
+            className={`danmaku-item danmaku-${d.emotion}`}
+            style={{ top: `${d.top}%` }}
+          >
+            {d.text}
+          </div>
+        ))}
       </div>
 
-      <div className="scroll-hint">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path
-            d="M12 5v14M5 12l7 7 7-7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </div>
+      <div className="bg-text">MONA</div>
 
-      <div className="status-chip">
-        {faceDetected ? <span>她看见你了</span> : '今天已有 12 位同事被她看见'}
+      <div className="mona-center">
+        <video className="mona-video" src="/左到右.mp4" autoPlay loop muted playsInline />
+        <div className="mona-title">她看见你了</div>
+        <div className="mona-subtitle">走近一点，让她感受你今天的心情</div>
       </div>
     </div>
   )
